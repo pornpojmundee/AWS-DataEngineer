@@ -125,6 +125,24 @@ docker compose up
 This is a portfolio / learning project built to practice the skills required
 for a financial-services Data Engineer role. Data is entirely synthetic.
 
+### What's actually deployed on AWS (verified, not just designed)
+
+| Component | Status | Evidence |
+|---|---|---|
+| S3 data lake (`raw/`, `curated/`) | ✅ Live | `s3://pornpoj-fintech-lakehouse-2026/` |
+| IAM user + role (least-privilege) | ✅ Live | `data-engineer-dev` user, `AWSGlueServiceRole-fintech` role |
+| Spark batch ETL on AWS Glue | ✅ Ran successfully | Glue job `fintech-etl-job`, Glue 5.1, produced partitioned Parquet curated tables |
+| Glue Data Catalog | ✅ Live | Database `fintech_curated`, 5 tables cataloged via crawler |
+| Athena querying | ✅ Verified | Ad-hoc SQL queries against curated tables ran successfully |
+| Data quality checks | ✅ Verified locally | `run_quality_checks_local.py` — null, duplicate, and referential-integrity checks passed against 200k+ transactions |
+| CI (GitHub Actions + pytest) | ✅ Live | Runs on every push |
+| Apache Iceberg tables | 🔲 Designed, not deployed | Curated tables currently write as plain partitioned Parquet (see `write_iceberg` note in `etl_transactions.py`); swapping to Iceberg requires enabling `--datalake-formats=iceberg` on the Glue job |
+| Kinesis + Lambda streaming | 🔲 Code written, not deployed | `pipelines/streaming/` has a working producer/consumer pair; not yet wired to a live Kinesis stream |
+| Redshift Serverless | 🔲 Designed, not deployed | Blocked on AWS account payment verification; schema/query plan described above |
+| Apache Flink | 🔲 Not implemented | Kinesis + Lambda used instead as a lighter-weight stand-in for real-time processing |
+| QuickSight dashboards | 🔲 Not built | Depends on Redshift being live |
+| Airflow orchestration | 🔲 DAG written, not run | `airflow/dags/fintech_pipeline_dag.py` + `docker-compose.yml` exist but haven't been executed end-to-end |
+
 ## License
 
 MIT

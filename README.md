@@ -74,7 +74,8 @@ fintech-data-lakehouse/
 ├── tests/                 # pytest unit tests for transformations
 ├── docs/
 │   ├── er_diagram.md      # data model + ER diagram (mermaid)
-│   └── business_glossary.md
+│   ├── business_glossary.md
+│   └── data_lineage.md    # field-level lineage: source -> raw -> curated -> consumption
 └── .github/workflows/ci.yml
 ```
 

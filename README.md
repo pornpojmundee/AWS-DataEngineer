@@ -65,9 +65,11 @@ role in financial services:
 fintech-data-lakehouse/
 ├── data_generator/       # synthetic fintech data generator (Faker)
 ├── pipelines/
-│   ├── spark_jobs/       # PySpark batch ETL (raw -> Iceberg curated)
+│   ├── spark_jobs/       # PySpark batch ETL: Parquet variant + Iceberg variant (Glue-ready)
 │   └── streaming/        # Kinesis producer + Lambda consumer demo
-├── airflow/dags/         # Airflow DAG orchestrating the pipeline
+├── airflow/
+│   ├── dags/              # Airflow DAG orchestrating the pipeline
+│   └── Dockerfile          # custom Airflow image with Java + PySpark
 ├── infra/                 # infrastructure as code notes (CDK/Terraform)
 ├── tests/                 # pytest unit tests for transformations
 ├── docs/
@@ -136,12 +138,12 @@ for a financial-services Data Engineer role. Data is entirely synthetic.
 | Athena querying | ✅ Verified | Ad-hoc SQL queries against curated tables ran successfully |
 | Data quality checks | ✅ Verified locally | `run_quality_checks_local.py` — null, duplicate, and referential-integrity checks passed against 200k+ transactions |
 | CI (GitHub Actions + pytest) | ✅ Live | Runs on every push |
-| Apache Iceberg tables | 🔲 Designed, not deployed | Curated tables currently write as plain partitioned Parquet (see `write_iceberg` note in `etl_transactions.py`); swapping to Iceberg requires enabling `--datalake-formats=iceberg` on the Glue job |
+| Apache Iceberg tables | ✅ Ran successfully | Separate Glue job `fintech-etl-iceberg-job` writes real Iceberg tables (catalog `fintech_curated_iceberg`) via Glue Catalog integration (`--datalake-formats=iceberg`); verified with Athena queries and Iceberg's `$snapshots` metadata table showing a real snapshot/overwrite history |
 | Kinesis + Lambda streaming | 🔲 Code written, not deployed | `pipelines/streaming/` has a working producer/consumer pair; not yet wired to a live Kinesis stream |
 | Redshift Serverless | 🔲 Designed, not deployed | Blocked on AWS account payment verification; schema/query plan described above |
 | Apache Flink | 🔲 Not implemented | Kinesis + Lambda used instead as a lighter-weight stand-in for real-time processing |
 | QuickSight dashboards | 🔲 Not built | Depends on Redshift being live |
-| Airflow orchestration | 🔲 DAG written, not run | `airflow/dags/fintech_pipeline_dag.py` + `docker-compose.yml` exist but haven't been executed end-to-end |
+| Airflow orchestration | 🟡 Partially verified locally | DAG (`fintech_pipeline_dag.py`) runs in Docker Compose against a custom image with Java + PySpark added (see `airflow/Dockerfile`); the DAG, its 4-task dependency chain, and scheduling are confirmed working in the Airflow UI, and the first task (`generate_raw_data`) has run successfully multiple times. The downstream Spark task has not yet completed a clean end-to-end run — local container restarts repeatedly orphaned in-progress task instances rather than any issue in the pipeline code itself (the same transformation logic already runs successfully on AWS Glue, see above) |
 
 ## License
 

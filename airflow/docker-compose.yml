@@ -5,7 +5,8 @@ version: "3.8"
 # `astro dev init` (Astronomer CLI) is a faster alternative to this file.
 
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.9.3
+  build: .
+  image: fintech-airflow:local
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -37,7 +38,7 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-      - "8080:8080"
+      - "8081:8080"
 
   airflow-scheduler:
     <<: *airflow-common

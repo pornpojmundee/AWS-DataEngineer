@@ -39,7 +39,9 @@ with DAG(
     transform = BashOperator(
         task_id="spark_transform_to_curated",
         bash_command=(
-            "spark-submit /opt/airflow/pipelines/spark_jobs/etl_transactions.py "
+            "spark-submit "
+            "--packages org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.2 "
+            "/opt/airflow/pipelines/spark_jobs/etl_transactions.py "
             "--input /opt/airflow/data/raw --output /opt/airflow/data/curated"
         ),
     )
